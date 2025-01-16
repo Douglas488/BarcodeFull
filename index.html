@@ -118,13 +118,24 @@
         }
 
         .autocomplete-items div {
-            padding: 12px 15px;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-            transition: all 0.2s ease;
+            padding: 8px 12px;
+            cursor: pointer;
+            line-height: 1.4;
         }
 
-        .autocomplete-items div:hover {
-            background-color: rgba(33, 150, 243, 0.1);
+        .autocomplete-items div strong {
+            color: var(--primary-color);
+            font-size: 1.1em;
+        }
+
+        .autocomplete-items div small {
+            display: block;
+            margin-top: 3px;
+            font-size: 0.85em;
+        }
+
+        .text-muted {
+            color: #6c757d;
         }
 
         .form-label {
@@ -592,15 +603,16 @@
         // 初始化预览
         updatePreview();
 
-        // 在现有代码中添加SKU输入框的自动完成功能
+        // 修改SKU输入框的自动完成功能
         const skuInput = document.getElementById('sku');
 
         skuInput.addEventListener('input', function(e) {
             closeAllLists();
             if (!this.value) return false;
             
+            // 修改搜索逻辑，使用精确的SKU匹配
             const matchingItems = productsData.filter(item => 
-                item.sku.toLowerCase().includes(this.value.toLowerCase())
+                item.sku.toLowerCase().startsWith(this.value.toLowerCase())
             );
 
             const autocompleteList = document.createElement('div');
@@ -609,8 +621,13 @@
 
             matchingItems.forEach(item => {
                 const itemDiv = document.createElement('div');
-                // 使用与条码内容相同的显示格式
-                itemDiv.innerHTML = `<strong>${item.mlCode}</strong> - ${item.sku} - ${item.storeName}`;
+                // 调整显示格式，突出显示SKU
+                itemDiv.innerHTML = `
+                    <strong>${item.sku}</strong> 
+                    <span class="text-muted">- ${item.productName || ''}</span>
+                    <br>
+                    <small class="text-muted">Código: ${item.mlCode} | Loja: ${item.storeName || ''}</small>
+                `;
                 itemDiv.addEventListener('click', function() {
                     fillFormData(item);
                     closeAllLists();
