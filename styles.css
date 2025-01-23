@@ -1,0 +1,126 @@
+/* 导航容器样式 */
+.nav-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+/* 导航图标样式 */
+.nav-icon {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 24px;
+    background: linear-gradient(45deg, #4CAF50, #45a049);
+    color: white;
+    text-decoration: none;
+    border-radius: 50px;
+    margin: 10px 0;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+/* 图标容器 */
+.icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    position: relative;
+    z-index: 2;
+}
+
+/* 图标样式 */
+.nav-icon i {
+    font-size: 20px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 文字样式 */
+.nav-icon span {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    position: relative;
+    z-index: 2;
+    transition: all 0.3s ease;
+}
+
+/* 脉冲动画效果 */
+.pulse {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
+    opacity: 0;
+    z-index: 1;
+}
+
+/* 悬停效果 */
+.nav-icon:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+    background: linear-gradient(45deg, #45a049, #4CAF50);
+}
+
+.nav-icon:hover i {
+    transform: scale(1.2) rotate(360deg);
+}
+
+.nav-icon:hover span {
+    transform: scale(1.05);
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.nav-icon:hover .pulse {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* 点击效果 */
+.nav-icon:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 10px rgba(76, 175, 80, 0.3);
+}
+
+/* 脉冲动画关键帧 */
+@keyframes pulse {
+    0% {
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 0.8;
+    }
+    50% {
+        opacity: 0.4;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1.5);
+        opacity: 0;
+    }
+}
+
+/* 添加响应式样式 */
+@media (max-width: 768px) {
+    .nav-container {
+        top: 10px;
+        right: 10px;
+    }
+    
+    .nav-icon {
+        padding: 8px 16px;
+        font-size: 14px;
+    }
+    
+    .nav-icon i {
+        font-size: 16px;
+    }
+    
+    .icon-wrapper {
+        width: 20px;
+        height: 20px;
+    }
+} 

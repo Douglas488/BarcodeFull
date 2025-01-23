@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Etiquetas QR</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%234CAF50'/><path d='M25 25h20v20h-20zM55 25h20v20h-20zM25 55h20v20h-20zM55 55h20v20h-20z' fill='white'/><rect width='100' height='100' rx='20' fill='white' opacity='0.1'/></svg>">
+    <style>
+        :root {
+            --primary-color: #2196F3;
+            --secondary-color: #03A9F4;
+            --accent-color: #00BCD4;
+            --background-color: #f5f7fa;
+            --card-background: rgba(255, 255, 255, 0.95);
+            --text-color: #333;
+            --border-radius: 12px;
+        }
+
+        body {
+            background: var(--background-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            padding: 20px 0;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(135deg, var(--primary-color) 0%, transparent 100%),
+                linear-gradient(45deg, var(--secondary-color) 0%, transparent 100%);
+            opacity: 0.1;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1400px;
+        }
+
+        .card {
+            background: var(--card-background);
+            border-radius: var(--border-radius);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 30px;
+            margin-bottom: 20px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .label-container {
+            background: white;
+            width: 60mm;
+            height: 40mm;
+            padding: 3mm;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
+            gap: 0.5mm;
+        }
+
+        .label-container:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 25px rgba(33, 150, 243, 0.15);
+        }
+
+        .section-title {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 25px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            border-radius: 3px;
+        }
+
+        .form-control {
+            border-radius: 8px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 12px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .form-control:focus {
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.2);
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .btn {
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
+
+        .history-container {
+            background: var(--card-background);
+            border-radius: var(--border-radius);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-top: 20px;
+        }
+
+        .history-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .history-info {
+            flex-grow: 1;
+        }
+
+        .history-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-reprint {
+            padding: 5px 10px;
+            font-size: 0.9em;
+        }
+
+        .btn-delete {
+            padding: 5px 10px;
+            font-size: 0.9em;
+            background: #dc3545;
+            color: white;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 修改标签容器样式 */
+        .title {
+            font-size: 10px;
+            font-weight: bold;
+            margin: 0;
+            margin-bottom: 0.5mm;
+        }
+
+        #qrcode, #printQrcode {
+            margin: 0.5mm 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            line-height: 0;
+        }
+
+        #qrcode img, #printQrcode img {
+            width: 22mm !important;
+            height: 22mm !important;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+            display: block;
+        }
+
+        .envio-info {
+            font-size: 12px;
+            font-weight: bold;
+            margin: 0;
+            margin-top: 0.5mm;
+            line-height: 1;
+        }
+
+        .id-info {
+            font-size: 8px;
+            margin: 0;
+            margin-top: 0.5mm;
+            line-height: 1;
+        }
+
+        /* 修改打印样式 */
+        @media print {
+            @page {
+                size: 60mm 40mm;
+                margin: 0;
+            }
+            
+            html, body {
+                margin: 0;
+                padding: 0;
+                width: 60mm;
+                height: 40mm;
+                overflow: hidden;
+            }
+            
+            .container {
+                display: none;
+            }
+            
+            /* 创建一个专门用于打印的容器 */
+            #printContainer {
+                display: block !important;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 60mm;
+                height: 40mm;
+                margin: 0;
+                padding: 0;
+                visibility: visible;
+            }
+            
+            .label-container {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 60mm !important;
+                height: 40mm !important;
+                padding: 3mm !important;
+                margin: 0 !important;
+                border: none !important;
+                box-shadow: none !important;
+                transform: none !important;
+                visibility: visible;
+                gap: 0.5mm !important;
+            }
+
+            #printQrcode {
+                margin: 0.5mm 0 !important;
+                line-height: 0 !important;
+            }
+
+            .envio-info, .id-info {
+                margin-top: 0.5mm !important;
+                line-height: 1 !important;
+            }
+        }
+
+        /* 添加搜索框样式 */
+        .search-container {
+            margin-bottom: 15px;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.2);
+            border-color: var(--primary-color);
+        }
+        
+        .history-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .show-more {
+            text-align: center;
+            padding: 10px;
+            color: var(--primary-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .show-more:hover {
+            color: var(--secondary-color);
+            text-decoration: underline;
+        }
+
+        /* 导航容器样式 */
+        .nav-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        /* 导航图标样式 */
+        .nav-icon {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 24px;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            margin: 10px 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 图标容器 */
+        .icon-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* 图标样式 */
+        .nav-icon i {
+            font-size: 20px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 文字样式 */
+        .nav-icon span {
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            position: relative;
+            z-index: 2;
+            transition: all 0.3s ease;
+        }
+
+        /* 脉冲动画效果 */
+        .pulse {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
+            opacity: 0;
+            z-index: 1;
+        }
+
+        /* 悬停效果 */
+        .nav-icon:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+            background: linear-gradient(45deg, #45a049, #4CAF50);
+        }
+
+        .nav-icon:hover i {
+            transform: scale(1.2) rotate(360deg);
+        }
+
+        .nav-icon:hover span {
+            transform: scale(1.05);
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .nav-icon:hover .pulse {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        /* 点击效果 */
+        .nav-icon:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 10px rgba(76, 175, 80, 0.3);
+        }
+
+        /* 脉冲动画关键帧 */
+        @keyframes pulse {
+            0% {
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 0.8;
+            }
+            50% {
+                opacity: 0.4;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        /* 添加响应式样式 */
+        @media (max-width: 768px) {
+            .nav-container {
+                top: 10px;
+                right: 10px;
+            }
+            
+            .nav-icon {
+                padding: 8px 16px;
+                font-size: 14px;
+            }
+            
+            .nav-icon i {
+                font-size: 16px;
+            }
+            
+            .icon-wrapper {
+                width: 20px;
+                height: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 添加返回按钮 -->
+    <div class="nav-container">
+        <a href="index.html" class="nav-icon">
+            <div class="icon-wrapper">
+                <i class="fas fa-barcode"></i>
+            </div>
+            <span>Barcode</span>
+            <div class="pulse"></div>
+        </a>
+    </div>
+    
+    <!-- 添加打印专用容器 -->
+    <div id="printContainer" style="display: none;">
+        <div class="label-container">
+            <div class="title">ETIQUETA DE VOLUME</div>
+            <div id="printQrcode"></div>
+            <div class="envio-info">ENVIO <span id="printEnvioNumber"></span></div>
+            <div class="id-info"><span id="printStoreName"></span> - ID: <span id="printIdNumber"></span></div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h1 class="text-center section-title mb-5">Gerador de Etiquetas QR</h1>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <h4 class="section-title">Informações da Etiqueta</h4>
+                    <form id="labelForm">
+                        <div class="mb-3">
+                            <label class="form-label">Número ENVIO</label>
+                            <input type="text" class="form-control" id="envioInput" placeholder="Digite o número ENVIO">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Número ID</label>
+                            <input type="text" class="form-control" id="idInput" placeholder="Digite o número ID">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Nome da Loja</label>
+                            <input type="text" class="form-control" id="storeInput" placeholder="Digite o nome da loja">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Tamanho da Etiqueta</label>
+                            <div class="row">
+                                <div class="col-6">
+                                    <input type="number" class="form-control" id="labelWidth" value="60" min="1" step="1">
+                                </div>
+                                <div class="col-6">
+                                    <input type="number" class="form-control" id="labelHeight" value="40" min="1" step="1">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-primary" onclick="generateLabel()">Gerar Etiqueta</button>
+                            <button type="button" class="btn btn-secondary" onclick="printLabel()">Imprimir Etiqueta</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <h4 class="section-title">Visualização</h4>
+                    <div class="label-container" id="labelContainer">
+                        <div class="title">ETIQUETA DE VOLUME</div>
+                        <div id="qrcode"></div>
+                        <div class="envio-info">ENVIO <span id="envioNumber"></span></div>
+                        <div class="id-info"><span id="storeName"></span> - ID: <span id="idNumber"></span></div>
+                    </div>
+                </div>
+                
+                <div class="history-container">
+                    <h4 class="section-title">Histórico</h4>
+                    <div class="search-container">
+                        <input type="text" 
+                               class="search-input" 
+                               id="historySearch" 
+                               placeholder="Pesquisar histórico (ENVIO/Loja/ID)...">
+                    </div>
+                    <div id="historyTableBody"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let qrcode = null;
+        
+        // 从localStorage加载历史记录
+        const loadHistory = () => {
+            return JSON.parse(localStorage.getItem('labelHistory') || '[]');
+        };
+
+        // 保存历史记录到localStorage
+        const saveHistory = (history) => {
+            localStorage.setItem('labelHistory', JSON.stringify(history));
+        };
+
+        // 修改历史记录显示函数
+        const updateHistoryTable = () => {
+            const history = loadHistory();
+            const historyContainer = document.getElementById('historyTableBody');
+            const searchTerm = document.getElementById('historySearch').value.toLowerCase();
+            
+            // 过滤历史记录
+            const filteredHistory = history.filter(record => {
+                const searchString = `${record.envioNumber} ${record.storeName} ${record.idNumber}`.toLowerCase();
+                return searchTerm ? searchString.includes(searchTerm) : true;
+            });
+            
+            // 确定显示数量
+            const displayCount = searchTerm ? filteredHistory.length : Math.min(3, filteredHistory.length);
+            const displayedRecords = filteredHistory.slice(0, displayCount);
+            
+            // 生成HTML
+            historyContainer.innerHTML = displayedRecords.map((record, index) => `
+                <div class="history-item">
+                    <div class="history-info" style="cursor: pointer;" onclick="reprintLabel(${history.indexOf(record)})">
+                        <div><strong>ENVIO:</strong> ${record.envioNumber}</div>
+                        <div><strong>Loja:</strong> ${record.storeName}</div>
+                        <div><strong>ID:</strong> ${record.idNumber}</div>
+                        <div><small class="text-muted">Tamanho: ${record.width}mm x ${record.height}mm</small></div>
+                        <div><small class="text-muted">Data: ${record.timestamp}</small></div>
+                    </div>
+                    <div class="history-actions">
+                        <button class="btn btn-primary btn-reprint" onclick="event.stopPropagation(); reprintLabel(${history.indexOf(record)})">Reimprimir</button>
+                        <button class="btn btn-delete" onclick="event.stopPropagation(); deleteHistory(${history.indexOf(record)})">Excluir</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            // 如果没有搜索且有更多记录，显示"显示更多"按钮
+            if (!searchTerm && filteredHistory.length > 3) {
+                historyContainer.innerHTML += `
+                    <div class="show-more" onclick="showAllHistory()">
+                        Mostrar mais registros (${filteredHistory.length - 3})
+                    </div>
+                `;
+            }
+        };
+
+        // 添加删除历史记录功能
+        const deleteHistory = (index) => {
+            if (confirm('Tem certeza que deseja excluir este registro?')) {
+                const history = loadHistory();
+                history.splice(index, 1);
+                saveHistory(history);
+                updateHistoryTable();
+            }
+        };
+
+        // 添加重新打印功能
+        const reprintLabel = (index) => {
+            const history = loadHistory();
+            const record = history[index];
+            
+            // 填充表单数据
+            document.getElementById('envioInput').value = record.envioNumber;
+            document.getElementById('idInput').value = record.idNumber;
+            document.getElementById('storeInput').value = record.storeName;
+            document.getElementById('labelWidth').value = record.width;
+            document.getElementById('labelHeight').value = record.height;
+            
+            // 重新生成标签
+            generateLabel();
+        };
+
+        function generateLabel() {
+            const envioNumber = document.getElementById('envioInput').value;
+            const idNumber = document.getElementById('idInput').value;
+            const storeName = document.getElementById('storeInput').value;
+            
+            // 更新显示的文本
+            document.getElementById('envioNumber').textContent = envioNumber;
+            document.getElementById('idNumber').textContent = idNumber;
+            document.getElementById('storeName').textContent = storeName;
+            
+            // 生成QR码
+            document.getElementById('qrcode').innerHTML = '';
+            const qrString = `{"id": "${envioNumber}","operation": "fbm", "type":"inbound","source":"seller"}`;
+            
+            qrcode = new QRCode(document.getElementById('qrcode'), {
+                text: qrString,
+                width: 83,  // 22mm约等于83像素
+                height: 83,
+                colorDark : "#000000",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.M,  // 提高纠错级别
+                margin: 0
+            });
+
+            // 保存到历史记录
+            const history = loadHistory();
+            history.unshift({
+                envioNumber,
+                idNumber,
+                storeName,
+                width: 60,
+                height: 40,
+                timestamp: new Date().toLocaleString()
+            });
+            
+            if (history.length > 50) {
+                history.pop();
+            }
+            
+            saveHistory(history);
+            updateHistoryTable();
+        }
+
+        // 添加清空历史记录功能
+        function clearHistory() {
+            if (confirm('Tem certeza que deseja limpar todo o histórico?')) {
+                saveHistory([]);
+                updateHistoryTable();
+            }
+        }
+
+        // 页面加载时初始化
+        window.onload = () => {
+            updateHistoryTable();
+            // 添加清空历史按钮
+            const historyContainer = document.querySelector('.history-container');
+            const clearButton = document.createElement('button');
+            clearButton.className = 'btn btn-danger mb-3';
+            clearButton.textContent = 'Limpar Histórico';
+            clearButton.onclick = clearHistory;
+            historyContainer.insertBefore(clearButton, historyContainer.firstChild.nextSibling);
+        };
+
+        // 修改打印函数
+        function printLabel() {
+            // 复制当前标签内容到打印容器
+            document.getElementById('printEnvioNumber').textContent = document.getElementById('envioNumber').textContent;
+            document.getElementById('printIdNumber').textContent = document.getElementById('idNumber').textContent;
+            document.getElementById('printStoreName').textContent = document.getElementById('storeName').textContent;
+            
+            // 重新生成打印用的二维码
+            const qrString = `{"id": "${document.getElementById('envioInput').value}","operation": "fbm", "type":"inbound","source":"seller"}`;
+            document.getElementById('printQrcode').innerHTML = '';
+            new QRCode(document.getElementById('printQrcode'), {
+                text: qrString,
+                width: 83,  // 保持与预览一致
+                height: 83,
+                colorDark : "#000000",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.M,
+                margin: 0
+            });
+            
+            // 调用打印
+            window.print();
+        }
+
+        // 修改按钮事件
+        document.querySelector('.btn-secondary').onclick = printLabel;
+
+        // 添加显示所有历史记录的功能
+        function showAllHistory() {
+            document.getElementById('historySearch').value = ' ';  // 添加空格触发搜索
+            updateHistoryTable();
+        }
+
+        // 添加搜索功能
+        document.getElementById('historySearch').addEventListener('input', function() {
+            updateHistoryTable();
+        });
+    </script>
+</body>
+</html> 

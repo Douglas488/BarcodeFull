@@ -8,6 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%232196F3'/><text x='50' y='50' font-family='Arial Black, Arial' font-weight='900' font-size='40' fill='white' text-anchor='middle' dominant-baseline='central' style='letter-spacing: -2px'>FULL</text><rect width='100' height='100' rx='20' fill='white' opacity='0.1'/></svg>">
     <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         :root {
             --primary-color: #2196F3;
@@ -583,12 +584,45 @@
                 }
             }
         }
+
+        /* 导航图标样式 */
+        .nav-icon {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 10px 0;
+            transition: background-color 0.3s;
+        }
+
+        .nav-icon:hover {
+            background-color: #45a049;
+        }
+
+        .nav-icon i {
+            font-size: 18px;
+        }
     </style>
 </head>
 <body>
     <!-- 添加角标 -->
     <div class="corner-ribbon">
         <span>Beta v1.0</span>
+    </div>
+    
+    <!-- 将导航按钮移到顶部 -->
+    <div class="nav-container">
+        <a href="index2.html" class="nav-icon">
+            <div class="icon-wrapper">
+                <i class="fas fa-qrcode"></i>
+            </div>
+            <span>QRcode</span>
+            <div class="pulse"></div>
+        </a>
     </div>
     
     <canvas id="barcodeCanvas" style="display: none;"></canvas>
@@ -666,9 +700,6 @@
             </div>
         </div>
     </div>
-
-    <!-- 添加Font Awesome图标 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
     <script>
         let productsData = [];
