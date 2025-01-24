@@ -230,8 +230,8 @@
                 overflow: hidden;
             }
             
-            .container {
-                display: none;
+            .container, .nav-container {
+                display: none !important;
             }
             
             /* 创建一个专门用于打印的容器 */
@@ -245,6 +245,7 @@
                 margin: 0;
                 padding: 0;
                 visibility: visible;
+                z-index: 9999;
             }
             
             .label-container {
